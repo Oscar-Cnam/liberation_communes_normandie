@@ -1,0 +1,23 @@
+---
+title: "Projet d'analyse de survie"
+subtitle: "Étude de la libération des communes de Normandie"
+author:
+  - name: Oscar Joseph--Geneslay
+    affiliation: Le Conservatoire National des Arts et Métiers (CFA - Saint-Denis)
+format: html
+theme: 
+  - "../theme/custom.scss"
+editor: visual
+toc: true
+toc-depth: 2
+---
+
+L'objectif du projet est d'appliquer une analyse de survie sur les données historiques liées à la libération des communes de l'ex Basse-Normandie, ainsi que d'identifier les facteurs de risques et protecteurs.
+
+# Packages utilisés
+
+```{r}
+library(dplyr) # Manipulation et transformation
+```
+
+# Collecte des données

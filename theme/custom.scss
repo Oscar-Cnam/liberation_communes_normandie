@@ -1,0 +1,125 @@
+/*-- scss:defaults --*/
+
+// 1. Palette de couleurs "Débarquement"
+$sable-clair:       #F4F1EA; // Couleur de fond principale (Plages d'Omaha/Utah)
+$kaki-militaire:    #4B5320; // Vert olive / Army
+$bleu-manche:       #4C6A92; // Bleu grisâtre (Océan et Marine)
+$rouge-coquelicot:  #9E1B11; // Rouge profond (Mémoire et pavillons)
+$gris-acier:        #71797E; // Blindages et équipements
+$texte-fonce:       #2C2C2C; // Contraste optimal pour la lecture
+
+// 2. Assignation aux variables Bootstrap / Quarto
+$body-bg:           $sable-clair;
+$body-color:        $texte-fonce;
+$primary:           $kaki-militaire;
+$secondary:         $gris-acier;
+$info:              $bleu-manche;
+$danger:            $rouge-coquelicot;
+
+$link-color:        $bleu-manche;
+
+// 3. Typographie de base
+$font-family-sans-serif: "Open Sans", sans-serif;
+$headings-font-family:   "Oswald", sans-serif;
+$headings-font-weight:   600;
+$headings-color:         $kaki-militaire;
+
+/*-- scss:rules --*/
+
+// Importation des polices (Oswald pour les titres forts, Special Elite pour l'effet machine à écrire)
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Oswald:wght@500;700&family=Special+Elite&display=swap');
+
+// ---------------------------------------------------------
+// Personnalisation des éléments HTML
+// ---------------------------------------------------------
+
+// Titres : Style brut, majuscules et soulignement léger
+h1, h2, h3, h4, h5, h6 {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-bottom: 2px solid rgba(75, 83, 32, 0.2);
+  padding-bottom: 0.3em;
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+}
+
+// Citations : Façon dépêche / télégramme militaire de 1944
+blockquote {
+  background-color: rgba(75, 83, 32, 0.08); 
+  border-left: 5px solid $kaki-militaire;
+  font-family: 'Special Elite', monospace;
+  color: #333;
+  padding: 1.2em 1.5em;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+}
+
+// Code en ligne : Rappel des machines à écrire
+code {
+  color: $rouge-coquelicot;
+  background-color: darken($sable-clair, 4%);
+  font-family: 'Special Elite', monospace;
+  padding: 0.2em 0.4em;
+  border-radius: 2px;
+}
+
+// Barre de navigation (si vous utilisez un site ou un book Quarto)
+.navbar {
+  background-color: $kaki-militaire !important;
+  border-bottom: 4px solid $rouge-coquelicot;
+}
+
+.navbar-brand, .nav-link {
+  color: $sable-clair !important;
+  font-family: $headings-font-family;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+// Boutons : Style caisse de munition (coins carrés)
+.btn-primary {
+  background-color: $kaki-militaire;
+  border-color: darken($kaki-militaire, 10%);
+  text-transform: uppercase;
+  font-family: $headings-font-family;
+  letter-spacing: 1px;
+  border-radius: 2px; 
+}
+
+.btn-primary:hover {
+  background-color: darken($kaki-militaire, 8%);
+}
+
+// ---------------------------------------------------------
+// Ajout du logo dans l'en-tête (Léopards normands)
+// ---------------------------------------------------------
+
+#title-block-header {
+  position: relative; // Nécessaire pour le positionnement absolu de l'image
+}
+
+#title-block-header::before {
+  content: "";
+  /* Remplacez 'leopards.png' par le nom exact de votre fichier image */
+  background-image: url('../images/leopards.png'); 
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: top right;
+  
+  /* Positionnement dans la marge gauche (votre encadré rouge) */
+  position: absolute;
+  top: 0px;       /* Ajustez pour monter ou descendre le logo par rapport au titre */
+  left: -150px;   /* Valeur négative pour le pousser hors du texte vers la gauche */
+  
+  /* Taille allouée au logo */
+  width: 120px;   
+  height: 120px;  
+}
+
+// Optionnel : Si vous êtes sur petit écran (mobile), on cache le logo ou on le remet au centre pour éviter qu'il ne sorte de l'écran
+@media (max-width: 768px) {
+  #title-block-header::before {
+    display: none; // Cache le logo sur mobile pour éviter les bugs d'affichage
+  }
+}
