@@ -89,7 +89,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul class="collapse">
   <li><a href="#packages-utilisés" id="toc-packages-utilisés" class="nav-link active" data-scroll-target="#packages-utilisés">Packages utilisés</a></li>
-  <li><a href="#collecte-des-données" id="toc-collecte-des-données" class="nav-link" data-scroll-target="#collecte-des-données">Collecte des données</a></li>
+  <li><a href="#collecte-des-données" id="toc-collecte-des-données" class="nav-link" data-scroll-target="#collecte-des-données">Collecte des données</a>
+  <ul class="collapse">
+  <li><a href="#collecte-des-dates-de-libération-par-commune" id="toc-collecte-des-dates-de-libération-par-commune" class="nav-link" data-scroll-target="#collecte-des-dates-de-libération-par-commune">Collecte des dates de libération par commune</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -132,25 +135,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="packages-utilisés" class="level1">
 <h1>Packages utilisés</h1>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># Manipulation et transformation</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'dplyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    filter, lag</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># Manipulation et transformation</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest) <span class="co"># Web scrapping</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="collecte-des-données" class="level1">
 <h1>Collecte des données</h1>
+<p>Les données souhaitées n’existent pas en Open Data. Il faut passer par une étape de création de la données.</p>
+<section id="collecte-des-dates-de-libération-par-commune" class="level2">
+<h2 class="anchored" data-anchor-id="collecte-des-dates-de-libération-par-commune">Collecte des dates de libération par commune</h2>
+<p>Se connecter à la page source des données</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Lien vers les noms de villes </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>link <span class="ot">=</span> <span class="st">"https://www.dday-overlord.com/bataille-normandie/communes"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Enregsitrement de la page dans un objet</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>cities_page <span class="ot">=</span> <span class="fu">read_html</span>(link)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>cities_page</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{html_document}
+&lt;html lang="fr-FR" prefix="og: https://ogp.me/ns#"&gt;
+[1] &lt;head&gt;\n&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
+[2] &lt;body class="wp-singular page-template-default page page-id-18481 page-pa ...</code></pre>
+</div>
+</div>
+<p>Récupérer les liens vers les communes contenues dans le tableau</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>link_cities_tab <span class="ot">=</span> cities_page <span class="sc">|&gt;</span> <span class="fu">html_elements</span>(<span class="st">"tr"</span>) <span class="sc">|&gt;</span> <span class="fu">html_elements</span>(<span class="st">"a"</span>) <span class="sc">|&gt;</span> <span class="fu">html_attr</span>(<span class="st">"href"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(link_cities_tab)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "https://www.dday-overlord.com/bataille-normandie/communes/agy"                 
+[2] "https://www.dday-overlord.com/bataille-normandie/communes/airan"               
+[3] "https://www.dday-overlord.com/bataille-normandie/communes/airel"               
+[4] "https://www.dday-overlord.com/bataille-normandie/communes/alencon"             
+[5] "https://www.dday-overlord.com/bataille-normandie/communes/amblie"              
+[6] "https://www.dday-overlord.com/bataille-normandie/communes/amfreville-le-hauger"</code></pre>
+</div>
+</div>
+</section>
 </section>
 
 </main>

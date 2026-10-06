@@ -17,7 +17,74 @@ L'objectif du projet est d'appliquer une analyse de survie sur les données hist
 # Packages utilisés
 
 ```{r}
-library(dplyr) # Manipulation et transformation
+#| message: false
+#| warning: false
+library(dplyr) # Manipulation et transformation de datasets
+library(rvest) # Web scrapping
+library(stringr) # Manipulation de chaînes de caractères
+library(readr) # Transformation des dates
+library(purrr) # Application de fonctions
 ```
 
 # Collecte des données
+
+Les données souhaitées n'existent pas en Open Data. Il faut passer par une étape de création de la données.
+
+## Collecte des dates de libération par commune
+
+Se connecter à la page source des données
+
+```{r}
+# Lien vers les noms de villes 
+link = "https://www.dday-overlord.com/bataille-normandie/communes"
+
+# Enregsitrement de la page dans un objet
+cities_page = read_html(link)
+cities_page
+```
+
+Récupérer les liens vers les communes contenues dans le tableau
+
+```{r}
+link_cities_tab = cities_page |> html_elements("tr a")|> html_attr("href")
+head(link_cities_tab)
+```
+
+Création d'une fonction pour collecter les données
+
+```{r}
+data_creator = function(data_link_cities){
+  # Récupérer le lien de la commune
+  temp_link = data_link_cities |> read_html() 
+  
+  # Récupérer le nom de la commune
+  name_city = temp_link |> html_elements("h3") |> html_text2() |> str_remove("\\s*\\(.*?\\)") |> str_trim()
+  # Récupérer le département de la commune
+  name_dpt = temp_link |> html_elements("h3") |> html_text2() |> str_extract("(?<=\\().*?(?=\\))")
+  
+  # Récupérer la date de libération
+  liberation_date = temp_link |> html_elements("li") |> html_text2() |> # Récupérer les éléments
+    str_subset("Libération") |> str_remove("^.*?Libération\\s*:\\s*") |> # Supprimer le label "Libération : "  
+    parse_date(format = "%d %B %Y", locale = locale("fr")) |> format("%d/%m/%Y") # Recoder la date
+  
+  # Stocker les éléments
+  resultat = c(name_city, name_dpt, liberation_date)
+  
+  # Insérer les nouvelles données dans le jeu de données
+  tibble(
+    commune          = name_city,
+    departement      = name_dpt,
+    date_liberation  = liberation_date,
+    url              = data_link_cities
+  )
+}
+```
+
+Application de la fonction
+
+```{r}
+dataset = map(link_cities_tab, data_creator, .progress = TRUE) |> 
+  list_rbind()
+```
+
+
