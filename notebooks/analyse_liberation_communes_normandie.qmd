@@ -54,37 +54,88 @@ Création d'une fonction pour collecter les données
 
 ```{r}
 data_creator = function(data_link_cities){
+  # 1. PARE-CHOCS ANTI-CRASH (Gère l'erreur de l'index 71)
+  # Si read_html échoue, on stocke NULL plutôt que de faire planter le script
+  temp_link = tryCatch(
+    { read_html(data_link_cities) },
+    error = function(e) { return(NULL) }
+  )
+  
+  # Si le lien est mort, on retourne un tableau vide et on passe au lien suivant
+  if (is.null(temp_link)) {
+    return(tibble()) 
+  }
+  
+  
   # Récupérer le lien de la commune
   temp_link = data_link_cities |> read_html() 
   
-  # Récupérer le nom de la commune
-  name_city = temp_link |> html_elements("h3") |> html_text2() |> str_remove("\\s*\\(.*?\\)") |> str_trim()
-  # Récupérer le département de la commune
+  # Récupérer le département
   name_dpt = temp_link |> html_elements("h3") |> html_text2() |> str_extract("(?<=\\().*?(?=\\))")
   
-  # Récupérer la date de libération
-  liberation_date = temp_link |> html_elements("li") |> html_text2() |> # Récupérer les éléments
-    str_subset("Libération") |> str_remove("^.*?Libération\\s*:\\s*") |> # Supprimer le label "Libération : "  
-    parse_date(format = "%d %B %Y", locale = locale("fr")) |> format("%d/%m/%Y") # Recoder la date
+  # Récupérer les éléments dans les infos de Libération
+  cities_info = temp_link |> html_elements("li") |> html_text2() |> str_subset("Libération")
   
-  # Stocker les éléments
-  resultat = c(name_city, name_dpt, liberation_date)
+  number_cities = length(cities_info)
   
-  # Insérer les nouvelles données dans le jeu de données
-  tibble(
-    commune          = name_city,
-    departement      = name_dpt,
-    date_liberation  = liberation_date,
-    url              = data_link_cities
-  )
+  if (number_cities > 1) {
+    
+    # 1. On crée une liste vide pour stocker les lignes créées par la boucle
+    liste_lignes = list() 
+    
+    for(num in 1:number_cities){
+      name_city = cities_info[num] |> str_extract("(?<=Libération de ).*?(?= :)")
+      
+      liberation_date = cities_info[num] |> 
+        str_remove("^.*?Libération\\s*:\\s*") |> str_replace("1er\\b", "1") |>
+        parse_date(format = "%d %B %Y", locale = locale("fr")) |> 
+        format("%d/%m/%Y") 
+      
+      # 2. On stocke le tibble (la ligne) dans la liste au rang "num"
+      liste_lignes[[num]] = tibble(
+        commune          = name_city,
+        departement      = name_dpt,
+        date_liberation  = liberation_date,
+        url              = data_link_cities
+      )
+    }
+    
+    # 3. On colle toutes les lignes ensemble pour faire un seul tableau multi-lignes, et on le renvoie
+    return(bind_rows(liste_lignes)) 
+    
+  } else { 
+    
+    name_city = temp_link |> html_elements("h3") |> html_text2() |> str_remove("\\s*\\(.*?\\)") |> str_trim()
+    
+    liberation_date = cities_info |> 
+      str_remove("^.*?Libération\\s*:\\s*") |> str_replace("1er\\b", "1") |>
+      parse_date(format = "%d %B %Y", locale = locale("fr")) |> 
+      format("%d/%m/%Y") 
+    
+    # Ici on a qu'une seule ville, on renvoie directement le tibble (1 seule ligne)
+    return(
+      tibble(
+        commune          = name_city,
+        departement      = name_dpt,
+        date_liberation  = liberation_date,
+        url              = data_link_cities
+      )
+    )
+  }
 }
 ```
 
-Application de la fonction
+Application de la fonction de collecte des données
 
 ```{r}
 dataset = map(link_cities_tab, data_creator, .progress = TRUE) |> 
   list_rbind()
 ```
+
+Plusieurs erreurs étaient présentes dans le site source, il faut ainsi les corriger manuellement.
+Résumé des différentes correction à effectuer : 
+- Remplacer le nom "Les villes de Normandie pendant les combats de 1944" par "Airan" et ajouter le département "Calvados"
+- Remplacer le nom "Auville-sur-le-Vey – La Blanche" par "Auville-sur-le-Vey"
+
 
 
