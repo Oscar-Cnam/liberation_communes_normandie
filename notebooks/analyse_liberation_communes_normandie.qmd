@@ -6,7 +6,7 @@ author:
     affiliation: Le Conservatoire National des Arts et Métiers (CFA - Saint-Denis)
 format: html
 theme: 
-  - "../theme/custom.scss"
+  - cosmo
 editor: visual
 toc: true
 toc-depth: 2
@@ -136,6 +136,17 @@ Plusieurs erreurs étaient présentes dans le site source, il faut ainsi les cor
 Résumé des différentes correction à effectuer : 
 - Remplacer le nom "Les villes de Normandie pendant les combats de 1944" par "Airan" et ajouter le département "Calvados"
 - Remplacer le nom "Auville-sur-le-Vey – La Blanche" par "Auville-sur-le-Vey"
+- Remplir date de libération pour Barneville-sur-mer
+- Remplir date de libération pour Carteret
+- Supprimer Brécourt – Le Grand Chemin ligne 49 car correspond à Sainte-Marie-du-Mont
+- Modifier Caponnet – Hill 30 par Caponnet
+- SUpprimer Barneville sur mer et Carteret ligne 74 75 (doublon)
+- remplacer Cloville et la cote 192 par Cloville
+- Supprimer Colleville-Montgomery de la ligne 92 et 94
+- Remplacer Esquay-Notre-Dame Cote 112 – Hill 112 par Esquay-Notre-Dame
+- Supprimer Le Grand Chemin – Brécourt (ligne 183) doublon
+- Supprimer Amfreville – Le Hauger (ligne 185) doublon
+
 
 
 
