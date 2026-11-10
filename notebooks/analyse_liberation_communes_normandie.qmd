@@ -45,6 +45,7 @@ cities_page
 
 Récupérer les liens vers les communes contenues dans le tableau
 
+
 ```{r}
 link_cities_tab = cities_page |> html_elements("tr a")|> html_attr("href")
 head(link_cities_tab)
@@ -54,7 +55,6 @@ Création d'une fonction pour collecter les données
 
 ```{r}
 data_creator = function(data_link_cities){
-  # 1. PARE-CHOCS ANTI-CRASH (Gère l'erreur de l'index 71)
   # Si read_html échoue, on stocke NULL plutôt que de faire planter le script
   temp_link = tryCatch(
     { read_html(data_link_cities) },
@@ -80,7 +80,7 @@ data_creator = function(data_link_cities){
   
   if (number_cities > 1) {
     
-    # 1. On crée une liste vide pour stocker les lignes créées par la boucle
+    # stocker les lignes créées par la boucle
     liste_lignes = list() 
     
     for(num in 1:number_cities){
@@ -91,7 +91,7 @@ data_creator = function(data_link_cities){
         parse_date(format = "%d %B %Y", locale = locale("fr")) |> 
         format("%d/%m/%Y") 
       
-      # 2. On stocke le tibble (la ligne) dans la liste au rang "num"
+      # On stocke le tibble (la ligne) dans la liste au rang "num"
       liste_lignes[[num]] = tibble(
         commune          = name_city,
         departement      = name_dpt,
@@ -100,7 +100,7 @@ data_creator = function(data_link_cities){
       )
     }
     
-    # 3. On colle toutes les lignes ensemble pour faire un seul tableau multi-lignes, et on le renvoie
+    # Emplier les lignes entres elles
     return(bind_rows(liste_lignes)) 
     
   } else { 
@@ -132,21 +132,80 @@ dataset = map(link_cities_tab, data_creator, .progress = TRUE) |>
   list_rbind()
 ```
 
+## Correction du jeu de données 
+
 Plusieurs erreurs étaient présentes dans le site source, il faut ainsi les corriger manuellement.
-Résumé des différentes correction à effectuer : 
-- Remplacer le nom "Les villes de Normandie pendant les combats de 1944" par "Airan" et ajouter le département "Calvados"
-- Remplacer le nom "Auville-sur-le-Vey – La Blanche" par "Auville-sur-le-Vey"
-- Remplir date de libération pour Barneville-sur-mer
-- Remplir date de libération pour Carteret
-- Supprimer Brécourt – Le Grand Chemin ligne 49 car correspond à Sainte-Marie-du-Mont
-- Modifier Caponnet – Hill 30 par Caponnet
-- SUpprimer Barneville sur mer et Carteret ligne 74 75 (doublon)
-- remplacer Cloville et la cote 192 par Cloville
-- Supprimer Colleville-Montgomery de la ligne 92 et 94
-- Remplacer Esquay-Notre-Dame Cote 112 – Hill 112 par Esquay-Notre-Dame
+
+Suppression à faire : 
+- Supprimer Barneville sur mer et Carteret ligne 74 75 (doublon)
+- Supprimer Colleville-Montgomery de la ligne 92 et 94 (doublon)
 - Supprimer Le Grand Chemin – Brécourt (ligne 183) doublon
 - Supprimer Amfreville – Le Hauger (ligne 185) doublon
 
+Modification nom de commune :
+- Remplacer le nom "Les villes de Normandie pendant les combats de 1944" par "Airan"
+- Remplacer le nom "Auville-sur-le-Vey – La Blanche" par "Auville-sur-le-Vey"
+- Modifier Caponnet – Hill 30 par Caponnet
+- remplacer Cloville et la cote 192 par Cloville
+- Remplacer Esquay-Notre-Dame Cote 112 – Hill 112 par Esquay-Notre-Dame
+- Remplacer Mont Castre – Côte 122 par Mont Castre
+- Remplacer Saint-Lô en 1944 par Saint-Lô
+- Remplacer Saint-Marcouf et îles de Saint-Marcouf par Îles de Saint-Marcouf
+
+Ajouter nom département : 
+- "Airan" ajouter le département "Calvados"
+- Saint-Lô et ajouter département
+- Ajouter département pour Saint-Manvieu-Norrey
+
+Ajouter date de libération :
+- Remplir date de libération pour Barneville-sur-mer 18 juin 1944
+- Remplir date de libération pour Carteret 19 juin 1944
+- Ajouter date de libération pour Luc-sur-mer (7 juin 44)
+- Ajouter date de libération pour Merville-Franceville (18 aout 44)
 
 
+
+```{r}
+# Suppression de certaines communes 
+dataset = dataset[-c(74,75,92,94,183,185), ]
+
+# Modification noms de communes
+dataset$commune <- replace(dataset$commune, dataset$commune == "Les villes de Normandie pendant les combats de 1944", "Airan")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Auville-sur-le-Vey – La Blanche", "Auville-sur-le-Vey")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Caponnet – Hill 30", "Caponnet")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Cloville et la cote 192", "Cloville")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Esquay-Notre-Dame Cote 112 – Hill 112", "Esquay-Notre-Dame")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Mont Castre – Côte 122", "Mont Castre")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Saint-Lô en 1944", "Saint-Lô")
+dataset$commune <- replace(dataset$commune, dataset$commune == "Saint-Marcouf et îles de Saint-Marcouf", "Îles Saint-Marcouf")
+
+# Ajouter nom de département
+dataset$departement <- replace(dataset$departement, dataset$commune == "Airan", "Calvados")
+dataset$departement <- replace(dataset$departement, dataset$commune == "Saint-Lô", "Manche")
+dataset$departement <- replace(dataset$departement, dataset$commune == "Saint-Manvieu-Norrey", "Calvados")
+
+# Ajouter date de libération
+dataset$date_liberation <- replace(dataset$date_liberation, dataset$commune == "Barneville-sur-Mer", "18/06/1944")
+dataset$date_liberation <- replace(dataset$date_liberation, dataset$commune == "Carteret", "19/06/1944")
+dataset$date_liberation <- replace(dataset$date_liberation, dataset$commune == "Luc-sur-Mer", "07/06/1944")
+dataset$date_liberation <- replace(dataset$date_liberation, dataset$commune == "Merville-Franceville", "18/08/1944")
+
+dataset
+```
+
+
+
+
+
+
+
+
+Regarder la courbe au global sans censure
+Regarder la survie par décile (pas vu en cours pour le moment-)
+Calculer à partir du 5 juin 1944
+
+
+```{r}
+min(as.Date(dataset$date_liberation, format = "%d/%m/%Y"), na.rm = TRUE)
+```
 
